@@ -12,11 +12,16 @@ class Graph:
                 if self.graph[i][j] == 0:
                     self.graph[i][j] = math.inf
 
+    def add_edge(self, i, j, w):
+        self.edges.append([i, j, w])
+
     def fill_matrix(self, f):
         for i in range(self.verteces):
             a = []
             line = f.readline().split()
-            for j in range(self.verteces):
+            for j in range(0, self.verteces):
+                if int(line[j]) != 0:
+                    self.add_edge(i, j, int(line[j]))
                 a.append(int(line[j]))
             self.graph.append(a)
 
@@ -46,6 +51,7 @@ class Graph:
         f = open(filename, 'r')
         self.verteces = int(f.readline())
         self.graph = []
+        self.edges = []
         self.fill_matrix(f)
 
         f.close()
@@ -86,26 +92,28 @@ class Graph:
         del tmp_graph
 
     def run_ford_bellman(self):
-        tmp_graph = copy.deepcopy(self.graph)
         distances = [math.inf] * self.verteces
 
         ver = int(input("Enter the first vertex's index:\n"))
         if ver < 0 or ver > self.verteces - 1:
             exit("Wrong vertex index.")
 
-        begin = time.time()
         distances[ver] = 0
-        for k in range(0, self.verteces - 1):
-            for i in range(0, self.verteces):
-                for j in range(0, self.verteces):
-                    if distances[j] > distances[i] + tmp_graph[i][j] and distances[i] != math.inf:
-                        distances[j] = distances[i] + tmp_graph[i][j]
 
-        for k in range(0, self.verteces - 1):
-            for i in range(0, self.verteces):
-                for j in range(0, self.verteces):
-                    if distances[j] > distances[i] + tmp_graph[i][j] and distances[i] != math.inf:
-                        exit("Found negative weight cycle in the given graph.")
+        begin = time.time()
+
+        mark = True
+        cnt = 0
+        while mark:
+            mark = False
+            for i, j, v in self.edges:
+                if distances[j] > distances[i] + v and distances[i] != math.inf:
+                    distances[j] = distances[i] + v
+                    mark = True
+
+            cnt += 1
+            if cnt > self.verteces:
+                exit("Negative cycle.")
 
         end = time.time()
         print(f"Total runtime of the function is {end - begin} seconds.")
@@ -134,8 +142,8 @@ class Graph:
 
 
 def main():
-    g = Graph("test5.txt")
-    g.run_dijkstra()
+    g = Graph("test1.txt")
+    g.run_floyd_warshall()
 
 
 if __name__ == "__main__":
